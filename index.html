@@ -3,22 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>네이버 지도 - 알록달록성장연구소</title>
+  <title>네이버 동적 지도</title>
   <style>
     html, body { height: 100%; margin: 0; }
-    #map { width: 100%; height: 100%; }
+    #map { width: 100%; height: 100%; } /* Sites에서 임베드 높이는 블록에서 조절 */
   </style>
+  <!-- 필요 시 지오코더: &submodules=geocoder 추가 -->
   <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=agwisn8w5o"></script>
 </head>
 <body>
   <div id="map"></div>
   <script>
-    const lat = 37.4769465;
-    const lng = 127.1101163;
+    // URL에 ?lat=37.5665&lng=126.9780&label=%ED%99%8D%EA%B3%A1 같은 파라미터로도 조정 가능
+    const params = new URLSearchParams(location.search);
+    const lat = parseFloat(params.get('lat')) || 37.5665;      // 기본: 서울시청 근처
+    const lng = parseFloat(params.get('lng')) || 126.9780;
+    const label = params.get('label') || '내 지점';
 
     const map = new naver.maps.Map('map', {
       center: new naver.maps.LatLng(lat, lng),
-      zoom: 16,
+      zoom: 15,
       zoomControl: true,
       zoomControlOptions: { position: naver.maps.Position.TOP_RIGHT }
     });
@@ -28,24 +32,19 @@
       map
     });
 
-   // const info = new naver.maps.InfoWindow({
-      content: `<div style="padding:8px 10px; font-size:14px;">
-                  <b>알록달록성장연구소</b><br/>
-                  서울 관악구 봉천동<br/>
-                  <a href="https://map.naver.com/p/search/알록달록성장연구소/place/1876905320" target="_blank">
-                    네이버 지도에서 보기
-                  </a>
-                </div>`
-    });//
-
-    info.open(map, marker); // 페이지 로드 시 바로 표시
-
+    const info = new naver.maps.InfoWindow({
+      content: `<div style="padding:8px 10px; font-size:14px;">${label}</div>`
+    });
     naver.maps.Event.addListener(marker, 'click', () => {
       info.getMap() ? info.close() : info.open(map, marker);
+    });
+
+    // 반응형 리사이즈(임베드 블록 크기 변경 시)
+    window.addEventListener('resize', () => {
+      const center = map.getCenter();
+      naver.maps.Event.trigger(map, 'resize');
+      map.setCenter(center);
     });
   </script>
 </body>
 </html>
-
-
-
